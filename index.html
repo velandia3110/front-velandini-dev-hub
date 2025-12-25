@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal de Noticias</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar h1 {
+            color: #667eea;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .navbar a {
+            color: #666;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+
+        .navbar a:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        /* Public News View */
+        .news-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .news-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .news-header h2 {
+            font-size: 42px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .news-header p {
+            font-size: 18px;
+            color: #666;
+        }
+
+        .news-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .news-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .news-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .news-image {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+        }
+
+        .news-content {
+            padding: 25px;
+        }
+
+        .news-title {
+            font-size: 22px;
+            color: #333;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .news-excerpt {
+            color: #666;
+            font-size: 15px;
+            line-height: 1.6;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .news-meta {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            color: #999;
+        }
+
+        /* Article Detail Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            overflow-y: auto;
+        }
+
+        .modal.show {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+
+        .modal-image {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+        }
+
+        .modal-body {
+            padding: 40px;
+        }
+
+        .modal-title {
+            font-size: 32px;
+            color: #333;
+            margin-bottom: 20px;
+            line-height: 1.3;
+        }
+
+        .modal-text {
+            font-size: 17px;
+            line-height: 1.8;
+            color: #444;
+            white-space: pre-wrap;
+        }
+
+        /* Admin Container */
+        .admin-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .admin-box {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 1200px;
+            overflow: hidden;
+        }
+
+        /* Login */
+        .login-container {
+            padding: 60px 40px;
+            max-width: 450px;
+            margin: 0 auto;
+        }
+
+        .login-container h2 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 28px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert-error {
+            background-color: #fee;
+            color: #c33;
+            border: 1px solid #fcc;
+        }
+
+        .alert-success {
+            background-color: #efe;
+            color: #3c3;
+            border: 1px solid #cfc;
+        }
+
+        /* Dashboard */
+        .dashboard {
+            padding: 30px;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .dashboard-header h2 {
+            color: #333;
+            font-size: 28px;
+        }
+
+        .btn-logout {
+            padding: 10px 20px;
+            background: #ff4757;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-secondary {
+            padding: 12px 24px;
+            background: #48dbfb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        /* Articles Grid Admin */
+        .articles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .article-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .article-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .article-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .article-content {
+            padding: 20px;
+        }
+
+        .article-title {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .article-text {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .article-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-edit {
+            flex: 1;
+            padding: 8px;
+            background: #ffa502;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-delete {
+            flex: 1;
+            padding: 8px;
+            background: #ff4757;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        /* Forms */
+        .form-container {
+            padding: 30px;
+        }
+
+        .form-container h2 {
+            color: #333;
+            margin-bottom: 25px;
+        }
+
+        .form-back {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: inherit;
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar-content {
+                padding: 15px 20px;
+            }
+
+            .navbar h1 {
+                font-size: 20px;
+            }
+
+            .news-header h2 {
+                font-size: 32px;
+            }
+
+            .news-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .modal-body {
+                padding: 20px;
+            }
+
+            .modal-title {
+                font-size: 24px;
+            }
+
+            .admin-box {
+                border-radius: 0;
+            }
+
+            .login-container {
+                padding: 40px 20px;
+            }
+
+            .dashboard {
+                padding: 20px;
+            }
+
+            .dashboard-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .articles-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn-primary, .btn-secondary {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Public News View -->
+    <div id="publicView">
+        <nav class="navbar">
+            <div class="navbar-content">
+                <h1 onclick="goToHome()">Portal de Noticias Velandini Dev Hub</h1>
+                <a href="#admin">Admin</a>
+            </div>
+        </nav>
+
+        <div class="news-container">
+            <div class="news-header">
+                <h2>Últimas Noticias</h2>
+                <p>Mantente informado con las noticias más recientes</p>
+            </div>
+
+            <div id="publicNewsGrid" class="news-grid">
+                <div class="loading">Cargando noticias...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Article Detail Modal -->
+    <div id="articleModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">×</button>
+            <img id="modalImage" class="modal-image" src="" alt="">
+            <div class="modal-body">
+                <h1 id="modalTitle" class="modal-title"></h1>
+                <div id="modalMeta" class="news-meta"></div>
+                <p id="modalText" class="modal-text"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Views -->
+    <div id="adminView" class="admin-container hidden">
+        <div class="admin-box">
+            <!-- Login -->
+            <div id="loginView" class="login-container">
+                <h2>Panel de Administración</h2>
+                <div id="loginAlert" class="alert"></div>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label>Usuario</label>
+                        <input type="text" id="loginUsername" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Contraseña</label>
+                        <input type="password" id="loginPassword" required>
+                    </div>
+                    <button type="submit" class="btn">Iniciar Sesión</button>
+                </form>
+            </div>
+
+            <!-- Dashboard -->
+            <div id="dashboardView" class="dashboard hidden">
+                <div class="dashboard-header">
+                    <h2>Panel de Control</h2>
+                    <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn-primary" onclick="showAdminView('newArticleView')">+ Nuevo Artículo</button>
+                    <button class="btn-secondary" onclick="showAdminView('registerUserView')">+ Registrar Usuario</button>
+                </div>
+
+                <div id="articlesContainer" class="articles-grid">
+                    <div class="loading">Cargando artículos...</div>
+                </div>
+            </div>
+
+            <!-- Registrar Usuario -->
+            <div id="registerUserView" class="form-container hidden">
+                <a href="#" class="form-back" onclick="showAdminView('dashboardView')">← Volver al Dashboard</a>
+                <h2>Registrar Nuevo Usuario</h2>
+                <div id="registerAlert" class="alert"></div>
+                <form id="registerForm">
+                    <div class="form-group">
+                        <label>Usuario</label>
+                        <input type="text" id="regUsername" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="regEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Contraseña</label>
+                        <input type="password" id="regPassword" required>
+                    </div>
+                    <button type="submit" class="btn">Registrar Usuario</button>
+                </form>
+            </div>
+
+            <!-- Nuevo Artículo -->
+            <div id="newArticleView" class="form-container hidden">
+                <a href="#" class="form-back" onclick="showAdminView('dashboardView')">← Volver al Dashboard</a>
+                <h2 id="articleFormTitle">Crear Nuevo Artículo</h2>
+                <div id="articleAlert" class="alert"></div>
+                <form id="articleForm">
+                    <input type="hidden" id="articleId">
+                    <input type="hidden" id="articleImageUrl">
+                    <div class="form-group">
+                        <label>Título</label>
+                        <input type="text" id="articleTitle" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Imagen del Artículo</label>
+                        <input type="file" id="articleImage" accept="image/*" required>
+                        <div id="imagePreview" style="margin-top: 10px; display: none;">
+                            <img id="previewImg" style="max-width: 100%; max-height: 200px; border-radius: 8px;" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Contenido</label>
+                        <textarea id="articleContent" required></textarea>
+                    </div>
+                    <button type="submit" class="btn" id="articleSubmitBtn">Crear Artículo</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://velandini-dev-hub.vercel.app/api';
+        let token = localStorage.getItem('token');
+        let allArticles = [];
+
+        // Router simple
+        function handleRoute() {
+            const hash = window.location.hash;
+            
+            if (hash === '#admin') {
+                document.getElementById('publicView').classList.add('hidden');
+                document.getElementById('adminView').classList.remove('hidden');
+                
+                if (token) {
+                    showAdminView('dashboardView');
+                    loadArticlesAdmin();
+                } else {
+                    showAdminView('loginView');
+                }
+            } else {
+                document.getElementById('publicView').classList.remove('hidden');
+                document.getElementById('adminView').classList.add('hidden');
+                loadPublicNews();
+            }
+        }
+
+        window.addEventListener('hashchange', handleRoute);
+        window.addEventListener('load', handleRoute);
+
+        function goToHome() {
+            window.location.hash = '';
+        }
+
+        // Cargar noticias públicas
+        async function loadPublicNews() {
+            try {
+                const response = await fetch(`${API_URL}/articles`);
+                const data = await response.json();
+                allArticles = data.articles;
+
+                const container = document.getElementById('publicNewsGrid');
+                
+                if (data.articles.length === 0) {
+                    container.innerHTML = '<div class="loading">No hay noticias disponibles</div>';
+                    return;
+                }
+
+                container.innerHTML = data.articles.map(article => `
+                    <div class="news-card" onclick="showArticleDetail('${article.id}')">
+                        <img src="${article.image_url}" alt="${article.title}" class="news-image" onerror="this.src='https://placehold.co/350x250/667eea/white?text=Sin+Imagen'">
+                        <div class="news-content">
+                            <h3 class="news-title">${article.title}</h3>
+                            <p class="news-excerpt">${article.content}</p>
+                            <div class="news-meta">
+                                <span>Por ${article.users?.username || 'Admin'}</span>
+                                <span>${new Date(article.created_at).toLocaleDateString('es-ES')}</span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                document.getElementById('publicNewsGrid').innerHTML = '<div class="loading">Error al cargar noticias</div>';
+            }
+        }
+
+        // Mostrar detalle del artículo
+        function showArticleDetail(id) {
+            const article = allArticles.find(a => a.id === id);
+            if (!article) return;
+
+            document.getElementById('modalImage').src = article.image_url;
+            document.getElementById('modalTitle').textContent = article.title;
+            document.getElementById('modalText').textContent = article.content;
+            document.getElementById('modalMeta').innerHTML = `
+                <span>Por ${article.users?.username || 'Admin'}</span>
+                <span>${new Date(article.created_at).toLocaleDateString('es-ES', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                })}</span>
+            `;
+            document.getElementById('articleModal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('articleModal').classList.remove('show');
+        }
+
+        // Cerrar modal al hacer clic fuera
+        document.getElementById('articleModal').addEventListener('click', (e) => {
+            if (e.target.id === 'articleModal') {
+                closeModal();
+            }
+        });
+
+        // Login
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const response = await fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    token = data.token;
+                    localStorage.setItem('token', token);
+                    showAlert('loginAlert', 'Login exitoso', 'success');
+                    setTimeout(() => {
+                        showAdminView('dashboardView');
+                        loadArticlesAdmin();
+                    }, 500);
+                } else {
+                    showAlert('loginAlert', data.error, 'error');
+                }
+            } catch (error) {
+                showAlert('loginAlert', 'Error de conexión', 'error');
+            }
+        });
+
+        // Registrar Usuario
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('regUsername').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+
+            try {
+                const response = await fetch(`${API_URL}/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showAlert('registerAlert', 'Usuario registrado exitosamente', 'success');
+                    document.getElementById('registerForm').reset();
+                } else {
+                    showAlert('registerAlert', data.error, 'error');
+                }
+            } catch (error) {
+                showAlert('registerAlert', 'Error de conexión', 'error');
+            }
+        });
+
+        // Preview de imagen
+        document.getElementById('articleImage').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                // Validar tipo de archivo
+                const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+                if (!validTypes.includes(file.type)) {
+                    showAlert('articleAlert', 'Por favor selecciona una imagen válida (JPG, PNG, GIF, WEBP)', 'error');
+                    e.target.value = '';
+                    return;
+                }
+
+                // Validar tamaño (5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    showAlert('articleAlert', 'La imagen no debe superar los 5MB', 'error');
+                    e.target.value = '';
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.getElementById('previewImg').src = e.target.result;
+                    document.getElementById('imagePreview').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Crear/Editar Artículo
+        document.getElementById('articleForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('articleId').value;
+            const title = document.getElementById('articleTitle').value;
+            const content = document.getElementById('articleContent').value;
+            const imageFile = document.getElementById('articleImage').files[0];
+            const existingImageUrl = document.getElementById('articleImageUrl').value;
+
+            let imageUrl = existingImageUrl;
+
+            // Si hay una nueva imagen, subirla
+            if (imageFile) {
+                const submitBtn = document.getElementById('articleSubmitBtn');
+                const originalText = submitBtn.textContent;
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Subiendo imagen...';
+                
+                const formData = new FormData();
+                formData.append('image', imageFile);
+
+                try {
+                    const uploadResponse = await fetch(`${API_URL}/upload`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: formData
+                    });
+
+                    const uploadData = await uploadResponse.json();
+
+                    if (!uploadResponse.ok) {
+                        throw new Error(uploadData.error || 'Error al subir imagen');
+                    }
+
+                    imageUrl = uploadData.imageUrl;
+                    submitBtn.textContent = 'Guardando artículo...';
+                } catch (error) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                    showAlert('articleAlert', error.message, 'error');
+                    return;
+                }
+            }
+
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `${API_URL}/articles/${id}` : `${API_URL}/articles`;
+
+            try {
+                const response = await fetch(url, {
+                    method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ title, imageUrl, content })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showAlert('articleAlert', data.message, 'success');
+                    document.getElementById('articleForm').reset();
+                    document.getElementById('articleId').value = '';
+                    document.getElementById('imagePreview').style.display = 'none';
+                    setTimeout(() => {
+                        showAdminView('dashboardView');
+                        loadArticlesAdmin();
+                    }, 1000);
+                } else {
+                    showAlert('articleAlert', data.error, 'error');
+                }
+
+                // Restaurar botón
+                const submitBtn = document.getElementById('articleSubmitBtn');
+                submitBtn.disabled = false;
+                submitBtn.textContent = id ? 'Actualizar Artículo' : 'Crear Artículo';
+            } catch (error) {
+                showAlert('articleAlert', 'Error de conexión', 'error');
+                const submitBtn = document.getElementById('articleSubmitBtn');
+                submitBtn.disabled = false;
+                submitBtn.textContent = id ? 'Actualizar Artículo' : 'Crear Artículo';
+            }
+        });
+
+        // Cargar artículos admin
+        async function loadArticlesAdmin() {
+            try {
+                const response = await fetch(`${API_URL}/articles`);
+                const data = await response.json();
+
+                const container = document.getElementById('articlesContainer');
+                
+                if (data.articles.length === 0) {
+                    container.innerHTML = '<div class="loading">No hay artículos disponibles</div>';
+                    return;
+                }
+
+                container.innerHTML = data.articles.map(article => `
+                    <div class="article-card">
+                        <img src="${article.image_url}" alt="${article.title}" class="article-image" onerror="this.src='https://placehold.co/300x200/667eea/white?text=Sin+Imagen'">
+                        <div class="article-content">
+                            <h3 class="article-title">${article.title}</h3>
+                            <p class="article-text">${article.content}</p>
+                            <div class="article-actions">
+                                <button class="btn-edit" onclick="editArticle('${article.id}')">Editar</button>
+                                <button class="btn-delete" onclick="deleteArticle('${article.id}')">Eliminar</button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                document.getElementById('articlesContainer').innerHTML = '<div class="loading">Error al cargar artículos</div>';
+            }
+        }
+
+        // Editar artículo
+        async function editArticle(id) {
+            try {
+                const response = await fetch(`${API_URL}/articles/${id}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Llenar el formulario con los datos existentes
+                    document.getElementById('articleId').value = data.article.id;
+                    document.getElementById('articleTitle').value = data.article.title;
+                    document.getElementById('articleImageUrl').value = data.article.image_url;
+                    document.getElementById('articleContent').value = data.article.content;
+                    
+                    // Cambiar títulos y textos del formulario
+                    document.getElementById('articleFormTitle').textContent = 'Editar Artículo';
+                    document.getElementById('articleSubmitBtn').textContent = 'Actualizar Artículo';
+                    
+                    // Hacer que la imagen no sea requerida al editar
+                    document.getElementById('articleImage').removeAttribute('required');
+                    
+                    // Mostrar preview de imagen existente
+                    document.getElementById('previewImg').src = data.article.image_url;
+                    document.getElementById('imagePreview').style.display = 'block';
+                    
+                    // Agregar texto informativo sobre la imagen
+                    const imageGroup = document.getElementById('articleImage').closest('.form-group');
+                    let helpText = imageGroup.querySelector('.help-text');
+                    if (!helpText) {
+                        helpText = document.createElement('small');
+                        helpText.className = 'help-text';
+                        helpText.style.color = '#666';
+                        helpText.style.fontSize = '13px';
+                        helpText.style.marginTop = '5px';
+                        helpText.style.display = 'block';
+                        imageGroup.appendChild(helpText);
+                    }
+                    helpText.textContent = 'Deja vacío para mantener la imagen actual';
+                    
+                    showAdminView('newArticleView');
+                }
+            } catch (error) {
+                alert('Error al cargar el artículo');
+            }
+        }
+
+        // Eliminar artículo
+        async function deleteArticle(id) {
+            if (!confirm('¿Estás seguro de eliminar este artículo?')) return;
+
+            try {
+                const response = await fetch(`${API_URL}/articles/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    loadArticlesAdmin();
+                } else {
+                    alert('Error al eliminar el artículo');
+                }
+            } catch (error) {
+                alert('Error de conexión');
+            }
+        }
+
+        // Mostrar vistas admin
+        function showAdminView(viewId) {
+            const views = ['loginView', 'dashboardView', 'registerUserView', 'newArticleView'];
+            views.forEach(view => {
+                document.getElementById(view).classList.add('hidden');
+            });
+            document.getElementById(viewId).classList.remove('hidden');
+
+            if (viewId === 'newArticleView') {
+                // Solo resetear si no estamos editando
+                if (!document.getElementById('articleId').value) {
+                    document.getElementById('articleForm').reset();
+                    document.getElementById('articleId').value = '';
+                    document.getElementById('articleImageUrl').value = '';
+                    document.getElementById('imagePreview').style.display = 'none';
+                    document.getElementById('articleImage').setAttribute('required', 'required');
+                    document.getElementById('articleFormTitle').textContent = 'Crear Nuevo Artículo';
+                    document.getElementById('articleSubmitBtn').textContent = 'Crear Artículo';
+                    
+                    // Remover texto de ayuda si existe
+                    const imageGroup = document.getElementById('articleImage').closest('.form-group');
+                    const helpText = imageGroup.querySelector('.help-text');
+                    if (helpText) {
+                        helpText.remove();
+                    }
+                }
+            }
+        }
+
+        // Logout
+        function logout() {
+            localStorage.removeItem('token');
+            token = null;
+            window.location.hash = '';
+        }
+
+        // Mostrar alertas
+        function showAlert(alertId, message, type) {
+            const alert = document.getElementById(alertId);
+            alert.className = `alert alert-${type} show`;
+            alert.textContent = message;
+            setTimeout(() => {
+                alert.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
